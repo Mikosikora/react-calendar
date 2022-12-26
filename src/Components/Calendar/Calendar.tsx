@@ -1,68 +1,9 @@
-import { useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
+import Dropdown from './../Dropdown/Dropdown';
 import './Calendar.css';
 
 const dateHtmlFormat = (date: { day: any; month: any; year: any; }) =>{
     return date.year.toString().padStart(4, '0') + "-" + date.month.toString().padStart(2, '0') + "-" + date.day.toString().padStart(2, '0');
-}
-
-const Day = (props: any) => {
-    return(
-        <>
-            <div onClick={() => props.pickDay(props.title)} className='day' style={{ borderColor: props.today ? "black" : "white" }}>{props.title}</div>
-        </>
-    )
-}
-
-const Dropdown = (props: any) => {
-
-    let header = ["Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd"].map((weekDay) => (
-        <span key={weekDay}>{weekDay}</span>
-    ));
-
-    const months = [
-        "Styczeń",
-        "Luty",
-        "Marzec",
-        "Kwiecień",
-        "Maj",
-        "Czerwiec",
-        "Lipiec",
-        "Sierpień",
-        "Wrzesień",
-        "Październik",
-        "Listopad",
-        "Grudzień",
-    ];
-
-    let startDay =  (new Date(props.year, props.month-1, 1).getDay() + 6) % 7 - 1;
-    let monthLength = new Date(props.year, props.month, 0).getDate();
-    
-    let days = Array(monthLength + startDay);
-    days.fill(0)
-    days = days.map((_, i) => {
-        if(i>startDay){
-            return(<Day key={i} title={i-startDay} today={i-startDay===props.day} pickDay={props.pickDay} />);
-        }else{
-            return(<Day key={i} />);
-        }
-
-    });
-
-    return(
-        <>
-            <div className='dropdown' style={{display: props.show ? "block" : "none"}} >
-                <div className="monthSlider">
-                    <img className='arrowButton' src="left-arrow.svg" onClick={props.handleBack} alt="" />
-                    {months[props.month-1]} {props.year}
-                    <img className='arrowButton' src="right-arrow.svg" onClick={props.handleNext} alt="" />
-                </div>
-                <div className="header">{header}</div>
-                <div className="days">
-                    {days}
-                </div>
-            </div>
-        </>
-    )
 }
 
 const Calendar = () => {
@@ -74,7 +15,7 @@ const Calendar = () => {
         console.log("Focus!")
     }
 
-    const next = () => {
+    const onClickNext = () => {
         let month =  date.month + 1 === 13 ? 1 : date.month + 1;
         let year = date.month + 1 === 13 ? date.year+1 : date.year
         if(year<2030){
@@ -83,7 +24,7 @@ const Calendar = () => {
         }
     }
 
-    const back = () => {
+    const onClickBack = () => {
         let month = date.month - 1 === 0 ? 12 : date.month - 1;
         let year = date.month - 1 === 0 ? date.year-1 : date.year
         if(year>2019){
@@ -92,8 +33,8 @@ const Calendar = () => {
         }
     }
 
-    const pickDay = (d: number) => {
-        setDate({day: d, month: date.month, year: date.year});
+    const pickDay = (day: number) => {
+        setDate({day, month: date.month, year: date.year});
         console.log(date)
     }
 
@@ -107,20 +48,21 @@ const Calendar = () => {
         inputEl.current.value = dateHtmlFormat(date);
     }
 
-    const onInputHandler = (e: any) =>{
-        let date = new Date(e.target.value);
-        if(e.target.value !== ""){
-            setDate({day: date.getDate(), month: date.getMonth()+1, year: date.getFullYear()})
-        }
+    const onInputHandler = (e: ChangeEvent<HTMLInputElement>) =>{
+		const inputValue = e.target.value;
+		const date = new Date(inputValue);
+		if (inputValue !== "") {
+			setDate({ day: date.getDate(), month: date.getMonth() + 1, year: date.getFullYear() })
+		}
     }
 
     return(
-        <>
-            <div>
-                <input type="date" className="date-input" ref={inputEl} onInput={onInputHandler} onFocus={onFocusHandler} />
-                <Dropdown day={date.day} month={date.month} year={date.year} show={show} handleNext={next} handleBack={back} pickDay={pickDay} />
-            </div>
-        </>
+        <div className="calendar" onClick={onFocusHandler}>
+            <span className="calendar-title">Od kiedy wolne</span>
+            <span className="calendar-icon"><img src="calendar.svg" alt="calendar icon" /></span>
+            <input type="date" className="calendar-input" ref={inputEl} onInput={onInputHandler} />
+            <Dropdown day={date.day} month={date.month} year={date.year} show={show} handleNext={onClickNext} handleBack={onClickBack} pickDay={pickDay} />
+        </div>
     )
 }
 
